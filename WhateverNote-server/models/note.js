@@ -1,8 +1,9 @@
 var mongoose = require('mongoose');
-var db = mongoose.createConnection('mongodb://localhost/notes')
+var db = mongoose.createConnection('mongodb://localhost:27017/notes')
 var NoteSchema = mongoose.Schema({
-	title: { type: String },
-	content: { type: String },
-	author: { type: String }
+	title: String,
+	content: String,
+	author: String
 });
-mongoose.model('Note',NoteSchema);
+
+exports.Note = db.model('Note',NoteSchema);

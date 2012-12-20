@@ -1,21 +1,57 @@
-var Note = require('../models/note');
-var sanitize = require('validator').sanitize;
+var Note = require('../models/note').Note;
 
 exports.index = function(req, res) {
-	res.send('hello world');
-};
-
-
-exports.create = function(req, res, next) {
-	var note = new Note();
-	note.title = res.body.title;
-	note.content = res.body.content;
-	note.author = res.body.author;
-
-	note.save( function(err) {
-		if (err) {
-			return next(err);
+	Note.find(function(err, notes) {
+		if (!err) {
+			res.send(notes);
+		} else {
+			res.send(err);
 		}
-		return { success: 1 };
 	});
+}
+
+exports.show = function(req, res) {
+	Note.findById(req.params.id, function (err, note) {
+    if (!err) {
+      res.send({success: 1, note: note});
+    } else {
+    	res.send({success: 0});
+    }
+  });
+}
+
+exports.create = function(req, res) {
+	var note = new Note();
+	note.title = req.body.title;
+	note.content = req.body.content;
+	note.author = req.body.author;
+	console.log(note);
+	note.save(function(err){
+		if (!err) {
+			res.send({success: 1});
+		} else {
+			res.send({success: 0});
+		}
+	});
+}
+
+exports.destroy = function(req, res) {
+	if (req.params.id) {
+		res.send({success: 0, error: "Need <id> parameter."});
+	} else {
+		Note.findById(req.params.id, function (err, note) {
+	    if (!err) {
+	      note.remove(function(err) {
+	      	if (!err) {
+	      		res.send({success: 1});
+	      	} else {
+	      		res.send({success: 0, error: "Failed to delete."});
+	      	}
+	      });
+	    } else {
+	    	res.send({success: 0, error: "Can't find the note."});
+	    }
+	  });
+	}
+
 }
