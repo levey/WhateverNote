@@ -7,5 +7,5 @@ exports.route = function (app) {
 	app.get('/notes', note.index);
 	app.get('/note/:id', note.show);
 	app.post('/notes', note.create);
-	app.delete('/note/:id', note.destroy);
+	app.delete('/notes/:id', note.destroy);
 };

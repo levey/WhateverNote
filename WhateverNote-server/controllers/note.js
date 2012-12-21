@@ -36,22 +36,25 @@ exports.create = function(req, res) {
 }
 
 exports.destroy = function(req, res) {
-	if (req.params.id) {
+	if (!req.params.id) {
 		res.send({success: 0, error: "Need <id> parameter."});
 	} else {
 		Note.findById(req.params.id, function (err, note) {
 	    if (!err) {
-	      note.remove(function(err) {
-	      	if (!err) {
-	      		res.send({success: 1});
-	      	} else {
-	      		res.send({success: 0, error: "Failed to delete."});
-	      	}
-	      });
+	    	if (note) {
+	    		note.remove(function(err) {
+	      		if (!err) {
+	      			res.send({success: 1});
+	      		} else {
+	      			res.send({success: 0, error: "Failed to delete."});
+	      		}
+	      	});
+	    	} else {
+	    		res.send({success: 0, error: "Can not find note."});
+	    	}
 	    } else {
-	    	res.send({success: 0, error: "Can't find the note."});
+	    	res.send({success: 0, error: "Failed to delete."});
 	    }
 	  });
 	}
-
 }
