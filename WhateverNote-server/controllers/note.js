@@ -35,6 +35,21 @@ exports.create = function(req, res) {
 	});
 }
 
+exports.update = function(req, res) {
+	var update = {
+		title: req.param('title'), 
+		content: req.param('content'), 
+		author: req.param('author')
+	};
+	Note.findByIdAndUpdate(req.params.id, update, function(err) {
+		if (err) {
+			res.send(err);
+		} else {
+			res.send({success: 1});
+		}
+	});
+}
+
 exports.destroy = function(req, res) {
 	if (!req.params.id) {
 		res.send({success: 0, error: "Need <id> parameter."});

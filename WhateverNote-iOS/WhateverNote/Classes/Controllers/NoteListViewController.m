@@ -35,23 +35,7 @@
 #pragma mark - Private methods
 
 -(void)refreshList
-{
-//    NSURL *url = [NSURL URLWithString:@"http://localhost:3000/notes"];
-//    NSURLRequest *request = [NSURLRequest requestWithURL:url];
-//    AFJSONRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
-//        NSLog(@"List: %@", JSON);
-//        NSMutableArray *mArr = [NSMutableArray array];
-//        for (NSDictionary *attributes in JSON) {
-//            Note *note = [[Note alloc] initWithAttributes:attributes];
-//            [mArr addObject:note];
-//        }
-//        self.dataArray = mArr;
-//        [self.tableView reloadData];
-//    } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
-//        NSLog(@"Failed to get note list, error >> %@",error);
-//    }];
-//    [operation start];
-    
+{    
     [self.httpClient getPath:@"notes" parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSArray *responseArray = [responseObject objectFromJSONData];
         NSLog(@"%@", responseArray);
@@ -86,13 +70,26 @@
 
 - (void)updateNote:(Note *)aNote
 {
-    
+    NSDictionary *parameters = @{@"title": aNote.title, @"content": aNote.content, @"author": aNote.author};
+    [self.httpClient putPath:[NSString stringWithFormat:@"notes/%@",aNote.noteID] parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"%@", [responseObject objectFromJSONData]);
+        NSDictionary *dict = [responseObject objectFromJSONData];
+        if ([dict[@"success"] integerValue] == 1) {
+            [self.navigationController popViewControllerAnimated:YES];
+            [self refreshList];
+        }
+
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"Failed to update a note, ERROR >> %@", error);
+
+    }];
 }
 
 - (void)createNote:(Note *)aNote
 {
-    NSLog(@"%@", aNote.title);
-    [self.httpClient postPath:@"notes" parameters:@{@"title" : aNote.title, @"content" : aNote.content, @"author" : aNote.author} success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    NSDictionary *parameters = @{@"title": aNote.title, @"content": aNote.content, @"author": aNote.author};
+
+    [self.httpClient postPath:@"notes" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"%@", [responseObject objectFromJSONData]);
         NSDictionary *dict = [responseObject objectFromJSONData];
         if ([dict[@"success"] integerValue] == 1) {
@@ -145,6 +142,11 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    Note *note = self.dataArray[indexPath.row];
+    NoteViewController *nvc = [[NoteViewController alloc] initWithNote:note];
+    nvc.delegate = (id)self;
+    [self.navigationController pushViewController:nvc animated:YES];
+
 }
 
 #pragma mark - NoteViewController delegate
@@ -153,6 +155,8 @@
 {
     if (!isUpdate) {
         [self createNote:aNote];
+    } else {
+        [self updateNote:aNote];
     }
 }
 

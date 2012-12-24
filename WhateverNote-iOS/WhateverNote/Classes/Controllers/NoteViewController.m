@@ -41,7 +41,9 @@
     [super viewDidLoad];
     
     self.title = self.note ? @"Update" : @"New";
-    
+    self.titleTextField.text = self.note.title;
+    self.contentTextView.text = self.note.content;
+    self.authorTextField.text = self.note.author;
     UIBarButtonItem *doneBtn = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneBtnClicked)];
     self.navigationItem.rightBarButtonItem = doneBtn;
 }
@@ -50,19 +52,32 @@
 
 - (void)doneBtnClicked
 {
+    
+    NSString *alertMSG = @"";
+    if ([_titleTextField.text length] == 0) {
+        alertMSG = @"Title field can not be empty.";
+    } else if ([_contentTextView.text length] == 0) {
+        alertMSG = @"Content field can not be empty.";
+    } else if ([_authorTextField.text length] == 0) {
+        alertMSG = @"Author field can not be empty.";
+    } else {
+        alertMSG = @"";
+    }
+    
+    if (![alertMSG isEqualToString:@""]) {
+        UIAlertView *av = [[UIAlertView alloc] initWithTitle:nil message:alertMSG delegate:nil cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
+        [av show];
+        return;
+    }
+    
     if (_delegate &&[_delegate respondsToSelector:@selector(noteViewController:didDoneWithNote:update:)]) {
-        Note *note = nil;
-        BOOL update = YES;
-        if (!self.note) {
-            update = NO;
-            note = [[Note alloc] init];
-            note.title = _titleTextField.text;
-            note.content = _contentTextView.text;
-            note.author = _authorTextField.text;
-        } else {
-            note = self.note;
-        }
         
+        Note *note = self.note ? self.note : [[Note alloc] init];
+        note.title = _titleTextField.text;
+        note.content = _contentTextView.text;
+        note.author = _authorTextField.text;
+
+        BOOL update = self.note ? YES : NO;
         [_delegate noteViewController:self didDoneWithNote:note update:update];
     }
 }
